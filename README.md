@@ -30,7 +30,22 @@ INShuaKe是使用python语言编写的shuake 工具
 # 使用python3运行此项目[我自己的环境是Python 3.11.5，是使用miniconda装的python环境比较方便]
 # 安装完python3
 # 使用如下命令安装所需要的库
+强烈推荐使用miniconda !!!!!!  我本地的python装库不兼容报错了非常烦，就下了miniconda创建了一个新环境，把conda环境变量配好
+1、使用conda创建新环境
+conda create -n shuake python=3.11
+2、在当前环境下用pip安装所需要的库
+conda activate shuake
+![image](https://github.com/Drinkhuahuaniu/INShuaKe/assets/154965552/2f32a5a3-75c9-4d17-9d2a-eadf11a82d4a)
+
 pip install -r requirements.txt
+3、装库如果你无法挂t，就换源用以下的，不行了你在换个阿里云的。
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+4、推荐可以pycharm社区版搭配脚本，非常方便
+![image](https://github.com/Drinkhuahuaniu/INShuaKe/assets/154965552/0fe9764e-647e-49eb-9d05-1d19a0adab31)
+
+![image](https://github.com/Drinkhuahuaniu/INShuaKe/assets/154965552/84c814e6-9496-4e07-9130-298fb61f3be2)
+
 ```
 
 ### 二、如何运行
