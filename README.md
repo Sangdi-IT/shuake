@@ -35,17 +35,10 @@ INShuaKe是使用python语言编写的shuake 工具
 conda create -n shuake python=3.11
 2、在当前环境下用pip安装所需要的库
 conda activate shuake
-![image](https://github.com/Drinkhuahuaniu/INShuaKe/assets/154965552/2f32a5a3-75c9-4d17-9d2a-eadf11a82d4a)
-
 pip install -r requirements.txt
 3、装库如果你无法挂t，就换源用以下的，不行了你在换个阿里云的。
 pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
-
 4、推荐可以pycharm社区版搭配脚本，非常方便
-![image](https://github.com/Drinkhuahuaniu/INShuaKe/assets/154965552/0fe9764e-647e-49eb-9d05-1d19a0adab31)
-
-![image](https://github.com/Drinkhuahuaniu/INShuaKe/assets/154965552/84c814e6-9496-4e07-9130-298fb61f3be2)
-
 ```
 
 ### 二、如何运行
@@ -98,3 +91,6 @@ options.add_argument('--headless')
 INShuaKe 仅提供给上班上学期间工作学业繁重，抽不出时间完成网课任务的非程序员。
 
 本人有空会进行维护更新，欢迎大家一起维护更新。
+# 已知问题
+1、目前遇到实景课程无法刷，遇到会报错，报错了就换个其他的课程链接就行，等我有空更新完善完善。
+2、网络不好也会报错，这个我也没法哈哈，等我再聪明点。
