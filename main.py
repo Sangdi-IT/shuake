@@ -1,8 +1,10 @@
-from env import config
-from Shuake import Shuake
+import asyncio
+from shuake import Shuake
 
+
+async def main():
+    shuake = Shuake()  # 创建 Shuake 实例
+    await shuake.start()  # 运行 shuake.start() 方法
 
 if __name__ == '__main__':
-    shuake = Shuake()
-    shuake.setup(config.CHROME_DRIVER_PATH)
-    shuake.run_shuake()
+    asyncio.run(main())

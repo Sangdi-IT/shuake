@@ -1,87 +1,88 @@
-from selenium import webdriver as driver
-from selenium.webdriver.chrome.service import Service as ChromeService
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.common.exceptions import NoSuchElementException
+from progressbar import ProgressBar, Percentage, Bar
+from playwright.async_api import async_playwright
+from config.config import USER_NUMBER, USER_PASSWD, COURSER_LINK
+from getcourseid import Get_course_id
 from PIL import Image
 from io import BytesIO
-from env.config import USER_NUMBER, USER_PASSWD, COURSER_LINK, PAGE_NUM
-import random
-import time
+import asyncio as asynioc
 import cv2
 import re
 
 
 class Shuake:
-    def setup(self, chrome_path):
-        # 代码执行完毕后chrome不会关闭
-        # 使用指定的chrome浏览器
-        service = ChromeService(executable_path=chrome_path)
-        options = driver.ChromeOptions()
-        options.add_argument("--mute-audio")
-        options.add_argument('--window-size=1920,1080')
-        options.add_argument('--headless')
-        self.driver = driver.Chrome(options=options, service=service)
-        # self.driver.maximize_window()
-        self.driver.implicitly_wait(5)
+    async def start(self):
+        async with async_playwright() as playwright:
+            # playwright = await async_playwright().start()
+            # chromium = playwright.chromium
+            # self.browser = await chromium.launch(headless=False)
+            self.browser = await playwright.chromium.launch(channel='chrome', headless=False, args=['--mute-audio'])
+            self.context = await self.browser.new_context()
+            self.page = await self.context.new_page()
+            await self.page.goto(
+                "https://www.hngbwlxy.gov.cn/#/")
+            await self.login()
+            await self.check_user_core()
+            try:
+                status = await self.start_shuake()
+                if status:
+                    await self.browser.close()
+            except:
+                print("网络异常！请再次运行！")
 
-    # 获取屏幕截图
-    def get_screenshot(self, wait):
-        """
-            获取屏幕截图，截图结果使用Image打开，打开之后的对象可以用来从中截取出验证码图片
-        """
-        # 截屏
-        screenshot = self.driver.get_screenshot_as_png()
+    async def login(self):
+        login_button = await self.page.wait_for_selector(
+            'body > div > div.main-bg-top.ng-scope > div:nth-child(1) > div > div > ul > div.grid_9.searchInput > a')
+        await login_button.click()
+        username_input = await self.page.wait_for_selector(
+            '//*[@id="loginModal"]/div/div/div[2]/div/div/div/form/div[2]/div[1]/input')
+        await username_input.fill(USER_NUMBER)
+        password_input = await self.page.wait_for_selector(
+            '//*[@id="loginModal"]/div/div/div[2]/div/div/div/form/div[2]/div[2]/input')
+        await password_input.fill(USER_PASSWD)
+        login_button = await self.page.wait_for_selector(
+            '//*[@id="loginModal"]/div/div/div[2]/div/div/div/form/div[2]/button')
+        await login_button.click()
 
-        # 打开图片
+    async def check_user_core(self):
+        core_number = await self.page.wait_for_selector(
+            'body > div > div.main-bg-top.ng-scope > div:nth-child(1) > div > div > ul > div.grid_12.searchInput > div.search_user_wrap > div > p')
+        core_number = await core_number.inner_text()
+        core_number = re.search(r'\d+(\.\d+)?', core_number).group()
+        print(f"当前个人积分为：{core_number}")
+
+    async def get_course_link(self):
+        await self.page.goto(COURSER_LINK)
+        cookies = await self.context.cookies()
+        cookies = '; '.join([f"{cookie['name']}={cookie['value']}" for cookie in cookies])
+        channelId = COURSER_LINK.split('=')[-1]
+        rowlength = await self.page.wait_for_selector(
+            'body > div > div.container_24.clear-fix.ng-scope > div.grid_18.pad_left_20 > div > div > div.allCourse.mar_top_20 > div:nth-child(5) > div > div > div.page-total > span > strong')
+        rowlength = await rowlength.inner_text()
+        course_messages = await Get_course_id(cookies, channelId, rowlength, 1)
+        return course_messages
+
+    async def get_captcha_image(self):
+        img = await self.page.wait_for_selector('#drag > canvas.undefined')
+        bounding_box = await img.bounding_box()
+        left = round(bounding_box['x'])
+        top = round(bounding_box['y'])
+        right = round(left + bounding_box['width'])
+        down = round(top + bounding_box['height'])
+
+        screenshot = await self.page.screenshot()
         screenshot = Image.open(BytesIO(screenshot))
-
-        return screenshot
-
-    # 获取图片验证码在屏幕截图上的位置
-    def get_position(self, wait):
-        """
-            获取图片验证码在屏幕截图上的位置
-        """
-        # 获取图片验证码元素
-        img = self.driver.find_element(By.XPATH, '//*[@id="drag"]/canvas[1]')
-
-        # 获取验证码在屏幕截图上的坐标
-        location = img.location
-
-        # 获取验证码图片的的尺寸
-        size = img.size
-
-        # 使用图片坐标和图片尺寸计算出整个图片的区域
-        left, top, right, down = location['x'], location['y'], (location['x'] + size['width']), (
-                location['y'] + size['height'])
-
-        return left, top, right, down
-
-    # 下载图像
-    def get_image(self, wait):
-
-        # 获取截图用的坐标元组
-        position = self.get_position(wait)
-
-        # 屏幕截图
-        screenshot1 = self.get_screenshot(wait)
-        # 将不带阴影的验证码图片抠出
-        captcha = screenshot1.crop(position)
+        captcha = screenshot.crop((left, top, right, down))
         captcha_path = './images/captcha.png'
         with open(captcha_path, 'wb') as f:
-            captcha.save(f)
+            captcha.save(f, format='png')
         f.close()
         return captcha_path
 
-    # 获取移动距离
-    def get_pos(self, wait):
-        # 读取图像文件并返回一个image数组表示的图像对象
+    async def get_captcha_position(self):
         status = False
         while status is False:
-            imageSrc = self.get_image(wait)
+            captcha_path = await self.get_captcha_image()
+            imageSrc = captcha_path
             image = cv2.imread(imageSrc)
             # GaussianBlur方法进行图像模糊化/降噪操作。
             # 它基于高斯函数（也称为正态分布）创建一个卷积核（或称为滤波器），该卷积核应用于图像上的每个像素点。
@@ -103,10 +104,11 @@ class Shuake:
                 length = cv2.arcLength(contour, True)
                 # 如果检测区域面积在
                 # 计算轮廓的边界矩形，得到坐标和宽高
-                if 2000 < area < 2300 and 250 < length < 260:
+                if 20 < area < 30 and 230 < length < 300:
                     # 计算轮廓的边界矩形，得到坐标和宽高
                     # x, y: 边界矩形左上角点的坐标。
                     # w, h: 边界矩形的宽度和高度。
+
                     x, y, w, h = cv2.boundingRect(contour)
                     # 在目标区域上画一个红框看看效果
                     # cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
@@ -114,202 +116,96 @@ class Shuake:
                     status = True
                     return x
 
-            self.driver.refresh()
-            time.sleep(0.5)
-            self.driver.switch_to.window(self.driver.window_handles[-1])
-            time.sleep(0.2)
-            tan_box = self.driver.find_element(By.XPATH, '//*[@id="msBox"]/div[3]/span')
-            tan_box.click()
+            refresh_pic_button = await self.page.wait_for_selector('#drag > div.refreshIcon')
+            await refresh_pic_button.click()
 
-    # 移动滑块
-    def move_slider(self, wait):
-        x_distance = self.get_pos(wait)
-        # 获取滑块
-        slider = self.driver.find_element(By.XPATH, '//*[@id="drag"]/div[2]/div/div/span')
-        # 按下鼠标左键
-        ActionChains(self.driver).click_and_hold(slider).perform()
-        time.sleep(0.2)
-        # 移动鼠标
-        all_distance = x_distance + 14
-        move = 0
-        while move < all_distance:
-            x = random.randint(6, 10)
-            move += x
-            ActionChains(self.driver).move_by_offset(x, 2).perform()
-        time.sleep(0.5)
-        # 释放鼠标
-        ActionChains(self.driver).release().perform()
-        try:
-            time.sleep(0.5)
-            check = self.driver.find_element(By.XPATH, '//*[@id="myplayer_display"]/div[1]')
-            if check:
-                return True
-            else:
-                return False
-        except:
-            return False
+    async def move_to_slider(self):
+        x_move_position = await self.get_captcha_position()
+        slider = await self.page.wait_for_selector('#drag > div.sliderContainer > div > div')
+        slider_position = await slider.bounding_box()
+        await slider.hover()
+        await self.page.mouse.down()
+        await self.page.mouse.move(slider_position['x'] + x_move_position + 30, slider_position['y'] + 2, steps=5)
+        await self.page.mouse.up()
 
-    # 查询课程
-    def check_status(self, wait, page):
-        # 查询全部课程
-        page = page
-        # 记录未选课程
-        course = {}
-
-        # 获取最大页数
-        pagemax_element = wait.until(
-            EC.visibility_of_element_located((By.XPATH,
-                                              '/html/body/div/div[3]/div[3]/div/div/div[2]/div[3]/div/div/div[1]/span/strong')))
-        pagemax = int(int(pagemax_element.text) / 9 + 0.5)
-        while page <= pagemax + 1:
-
-            put_box = self.driver.find_element(By.XPATH,
-                                               '/html/body/div/div[3]/div[3]/div/div/div[2]/div[3]/div/div/div[1]/input')
-            put_box.clear()
-            put_number = self.driver.find_element(By.XPATH,
-                                                  '/html/body/div/div[3]/div[3]/div/div/div[2]/div[3]/div/div/div[1]/input')
-            put_number.send_keys(page)
-            go_page = self.driver.find_element(By.XPATH,
-                                               '/html/body/div/div[3]/div[3]/div/div/div[2]/div[3]/div/div/div[1]/button')
-            go_page.click()
-
-            time.sleep(0.5)
-            ul_element = self.driver.find_element(By.XPATH, '/html/body/div/div[3]/div[3]/div/div/div[2]/ul')
-            li_elements = ul_element.find_elements(By.XPATH, './li')
-            for li_element in li_elements:
-                course_name = str(li_element.find_element(By.XPATH, './p[1]/a').text)
-                course_core = float(
-                    re.search(r'\d+(\.\d+)?', li_element.find_element(By.XPATH, './p[2]/span[2]').text).group())
-
-                course_status = str(li_element.find_element(By.XPATH, './div/p[1]/span/span').text)
-                course_link = str(li_element.find_element(By.XPATH, './p[1]/a').get_attribute('href'))
-                course[course_name] = [course_core, course_status, course_link]
-
-            page += 1
-
-        return course
-
-    # 学习课程
-    def study_video(self, wait, course_name, course_message, course_link, course_schedule):
-        course_time_element = wait.until(
-            EC.visibility_of_element_located(
-                (By.XPATH, "/html/body/div/div[3]/div[1]/div/div/div[2]/div[1]/div/div[2]/span[2]")))
-        course_time = int(re.search(r'\d+(\.\d+)?', course_time_element.text).group())
-        print(
-            "当前选择课程：\"{}\"，课程时长{}，课程当前已学习进度{}".format(course_name, course_time, course_schedule))
-        play_button = wait.until(
-            EC.visibility_of_element_located(
-                (By.XPATH, '/html/body/div/div[3]/div[1]/div/div/div[2]/div[1]/div/div[4]/a')))
-        if play_button.text == "播放":
-            play_button.click()
+        await asynioc.sleep(1)
+        class_attribute = await self.page.locator('//*[@id="drag"]/div[2]').get_attribute('class')
+        if class_attribute == 'sliderContainer sliderContainer_success':
+            return True
         else:
-            self.driver.execute_script("window.open('');")
-            all_handles = self.driver.window_handles
-            new_window_handle = all_handles[-1]
-            self.driver.switch_to.window(new_window_handle)
-            self.driver.get(course_link)
-            play_button = wait.until(
-                EC.visibility_of_element_located(
-                    (By.XPATH, '/html/body/div/div[3]/div[1]/div/div/div[2]/div[1]/div/div[4]/a')))
-            play_button.click()
-
-        # 等待新窗口打开
-        # self.driver.switch_to.alert.accept()
-        try:
-            time.sleep(1)
-            self.driver.switch_to.window(self.driver.window_handles[-1])
-            study_status = self.driver.find_element(By.ID, 'ban-study')
-            if study_status:
-                return True
-        except NoSuchElementException:
-            print("{}->开始学习".format(course_name))
-            time.sleep(0.5)
-            self.driver.switch_to.window(self.driver.window_handles[-1])
-            tan_box = self.driver.find_element(By.XPATH, '//*[@id="msBox"]/div[3]/span')
-            tan_box.click()
-            # 获取移动距离
-
-            # 判断滑块是否成功
-            check = self.move_slider(wait)
-            while check is False:
-                self.get_pos(wait)
-                check = self.move_slider(wait)
-
-            pass_schedule = course_time * (float(course_schedule.replace('%', '')) / 100.0)
-            not_pass_schedule = course_time - pass_schedule
-            wait_time = int(not_pass_schedule + 1)
-            print("{}需要学习时长{}".format(course_name, wait_time))
-            wait_time_miao = wait_time * 60
-            # 等待课程结束
-            # self.driver.find_element(By.XPATH,'//*[@id="myplayer_display_button_replay"]')
-            time.sleep(wait_time_miao)
-            print("{}观看完毕！".format(course_name))
-
-            # 关闭当前标签页 并等待15秒钟 防止打开下一个视频出现弹窗10秒内不能打开新的课程
-            current_window_handle = self.driver.current_window_handle
-            self.driver.close()
-            for handle in self.driver.window_handles:
-                if handle != current_window_handle:
-                    self.driver.switch_to.window(handle)
-            time.sleep(15)
             return False
 
-    # 执行刷课
-    def run_shuake(self):
-        self.driver.get('https://www.hngbwlxy.gov.cn/#/')
-        # time.sleep(0.5)
-        wait = WebDriverWait(self.driver, 10)
-        # 点击登录
-        login_button = wait.until(
-            EC.visibility_of_element_located((By.XPATH, '/html/body/div/div[1]/div[1]/div/div/ul/div[1]/a')))
-        login_button.click()
-        # 输入账号
-        user_number = wait.until(
-            EC.visibility_of_element_located((By.XPATH,
-                                              '//*[@id="loginModal"]/div/div/div[2]/div/div/div/form/div[2]/div[1]/input')))
-        user_number.send_keys(USER_NUMBER)
-        # 输入密码
-        user_passwd = wait.until(
-            EC.visibility_of_element_located((By.XPATH,
-                                              '//*[@id="loginModal"]/div/div/div[2]/div/div/div/form/div[2]/div[2]/input')))
-        user_passwd.send_keys(USER_PASSWD)
-        # 点击登录
-        user_login_button = wait.until(
-            EC.visibility_of_element_located(
-                (By.XPATH, '//*[@id="loginModal"]/div/div/div[2]/div/div/div/form/div[2]/button')))
-        user_login_button.click()
-
-        # 查询个人积分
-        # time.sleep(0.8)
-        core_number = wait.until(
-            EC.visibility_of_element_located((By.XPATH,
-                                              '/html/body/div/div[1]/div[1]/div/div/ul/div[2]/div[2]/div/p')))
-        core_number = re.search(r'\d+(\.\d+)?', core_number.text).group()
-        print("当前个人积分：{}".format(core_number))
-
-        # you_want_to_study_url = input("请输入你想要学习的课程URL：")
-        you_want_to_study_url = COURSER_LINK
-        # 前往所需要学习的课程页面
-        self.driver.get(you_want_to_study_url)
-        time.sleep(0.5)
-
-        # 获取全部课程
-        course = self.check_status(wait, page=PAGE_NUM)
-        # 获取URL链接
-        for course_name, course_message in course.items():
-            course_link = course_message[2]
-            self.driver.get(course_link)
-            time.sleep(0.5)
-            course_schedule_element = self.driver.find_element(By.XPATH,
-                                                               "/html/body/div/div[3]/div[1]/div/div/div[2]/div[1]/div/div[3]/span[2]")
-            course_schedule = course_schedule_element.text
-            if course_schedule != "100.0%":
-                study_status = self.study_video(wait, course_name, course_message, course_link, course_schedule)
-                if study_status is True:
-                    print("今日学习的学分已经够5分，不需要再学习了！")
+    async def wait_for_jwplayer(self, selector):
+        while True:
+            try:
+                player = await self.page.wait_for_selector(
+                    "body > div > div > div > div.sigle-video.ng-scope > div.sigle-video-bg > div")
+                await player.hover()
+                jwplayer = await self.page.wait_for_selector(selector)
+                if jwplayer:
                     break
                 else:
-                    print("今日学习的学分未够5分，将为您自动选择下一门课程！")
-                    continue
+                    await asynioc.sleep(1)
+            except Exception as e:
+                await asynioc.sleep(1)
 
-        print("今日学分已够5分或当前URL下的课程已经全部学习完毕！")
+        return jwplayer
+
+    async def start_shuake(self):
+        course_messages = await self.get_course_link()
+        for course_message in course_messages:
+            for course_id, course_name in course_message.items():
+                course_url = f"https://www.hngbwlxy.gov.cn/#/courseCenter/courseDetails?Id={str(course_id)}&courseType=video"
+                await self.page.goto(course_url)
+                await asynioc.sleep(2)
+                course_status = await self.page.wait_for_selector(
+                    'body > div > div:nth-child(3) > div.container_24 > div > div > div.cpurseDetail.grid_24 > div.c-d-course.clearfix > div > div.course-progress > span.progress-con.ng-binding')
+                course_status = await course_status.inner_text()
+                if course_status == "100.0%":
+                    print(f" {course_name} 课程已学完将为您选择下一个课程！")
+                    continue
+                else:
+                    course_play_url = f"https://www.hngbwlxy.gov.cn/#/play/play?Id={str(course_id)}"
+                    await self.page.goto(course_play_url)
+                    try:
+                        study_status = await self.page.wait_for_selector('#ban-study', timeout=4000)
+                        if study_status:
+                            print("今日学习的学分已经够5分，不需要再学习了！")
+                            return True
+                    except:
+                        print("正在自动选择下一门课程！")
+                    tan_box = await self.page.wait_for_selector('#msBox > div.msBtn > span')
+                    await tan_box.click()
+                    check = await self.move_to_slider()
+                    while check is False:
+                        await self.get_captcha_position()
+                        check = await self.move_to_slider()
+                    print(f"{course_name} 课程开始学习！")
+                    course_progress = await self.wait_for_jwplayer(
+                        "#myplayer_controlbar > span.jwgroup.jwcenter > span.jwslider.jwtime > span.jwrail.jwsmooth > span.jwprogressOverflow")
+                    pbar = ProgressBar(widgets=[Percentage(), Bar()], maxval=100).start()
+                    while True:
+                        style1 = await course_progress.get_attribute("style")
+                        width1 = next(
+                            (s.split(":")[1].strip() for s in style1.split(";") if
+                             s.split(":")[0].strip() == "width"),
+                            None)
+                        await asynioc.sleep(1.5)
+                        style2 = await course_progress.get_attribute("style")
+                        width2 = next(
+                            (s.split(":")[1].strip() for s in style2.split(";") if
+                             s.split(":")[0].strip() == "width"),
+                            None)
+                        width_num = float(width2.strip('%'))
+                        pbar.update(width_num)
+                        # 0.0
+                        if (width1 == width2) and width_num == 0.0:
+                            pbar.finish()
+                            break
+                # 十秒钟不能打开另一个课程需要等待
+                await self.page.goto(COURSER_LINK)
+                await self.page.reload()
+                await asynioc.sleep(12)
+
+        print("当前URL下的课程已经全部学习完毕！")
+        return True
