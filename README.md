@@ -55,6 +55,12 @@ COURSER_LINK 填写方法：
 python main.py
 ```
 
+### 三、浏览器无窗口模式
+
+![image-20240511093854203](./assets/image-20240511093854203.png)
+
+将headless设置为True即可不弹出浏览器无浏览器运行，设置为False即可弹出浏览器运行，默认为True。
+
 ## 运行截图
 
 ![image-20240509174326633](./assets/image-20240509174326633.png)

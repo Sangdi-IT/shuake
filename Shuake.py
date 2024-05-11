@@ -15,7 +15,7 @@ class Shuake:
             # playwright = await async_playwright().start()
             # chromium = playwright.chromium
             # self.browser = await chromium.launch(headless=False)
-            self.browser = await playwright.chromium.launch(channel='chrome', headless=False, args=['--mute-audio'])
+            self.browser = await playwright.chromium.launch(channel='chrome', headless=True, args=['--mute-audio'])
             self.context = await self.browser.new_context()
             self.page = await self.context.new_page()
             await self.page.goto(
