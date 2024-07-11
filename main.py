@@ -1,5 +1,5 @@
 import asyncio
-from shuake import Shuake
+from Shuake import Shuake
 
 
 async def main():
