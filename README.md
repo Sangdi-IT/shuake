@@ -26,7 +26,43 @@ INShuaKe是使用PYTHON语言编写的**免费**SHUAKE工具，只限于HN地区
 
 ## Exe文件运行
 
-正在补充
+### 一、文件结构
+
+保持shuake.exe和config.txt在同一个目录下
+
+![image-20250102150616632](./assets/image-20250102150616632.png)
+
+### 二、config.txt文件格式
+
+
+
+```bash
+COURSER_LINK = "xxx.xxx.xxx/#/courseCenter?channelld=xxx"   # 填写你需要刷课的网址xxx
+
+# xxx                            # 账号1
+xxxxxxxxxxx = xxxxxxxxx          # 格式为： 手机号=密码
+
+# xxx
+xxxxxxxxxxx = xxxxxxxxx
+
+# xxx
+xxxxxxxxxxx = xxxxxxxxx
+
+```
+
+可以继续添加账号
+
+COURSER_LINK 填写方法：
+
+找到你要刷的课程页，如下图所示，当前url地址即为COURSER_LINK，将其复制填入
+
+![image-20231227104626991](./assets/image-20231227104626991.png)
+
+
+
+### 三、运行截图
+
+![image-20250102151823965](D:\Project\gitproject\INShuaKe\assets\image-20250102151823965.png)
 
 ## Python代码运行
 
@@ -84,7 +120,7 @@ python main.py
 
 将headless设置为True即可不弹出浏览器无浏览器运行，设置为False即可弹出浏览器运行，默认为True。
 
-## 运行截图
+### 四、运行截图
 
 ![image-20240509174326633](./assets/image-20240509174326633.png)
 
