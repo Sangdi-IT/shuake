@@ -62,7 +62,7 @@ COURSER_LINK 填写方法：
 
 ### 三、运行截图
 
-![image-20250102151823965](D:\Project\gitproject\INShuaKe\assets\image-20250102151823965.png)
+![image-20250102151823965](./assets/image-20250102151823965.png)
 
 ## Python代码运行
 
