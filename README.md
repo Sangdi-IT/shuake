@@ -20,7 +20,7 @@ INShuaKe是使用PYTHON语言编写的**免费**SHUAKE工具，只限于HN地区
 
 - May 9, 2024 最新使用playwright库重新写的，并且加入课程进度条，比selenium更方便，直接装库运行命令即可，不需要再配置Chromedriver了
 - May 11, 2024 更新README.md以及调整默认浏览器为无窗口模式
-- January 2, 2024 更新EXE运行文件！使用请见说明！
+- January 2, 2024 **更新EXE运行文件**！使用请见说明！
 
 # 使用方法
 
