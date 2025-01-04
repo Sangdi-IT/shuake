@@ -25,6 +25,10 @@ INShuaKe是使用PYTHON语言编写的**免费**SHUAKE工具，只限于HN地区
 
 # 使用方法
 
+下载见右边Releases或点击以下链接
+
+[https://github.com/Drinkhuahuaniu/INShuaKe/releases](https://github.com/Drinkhuahuaniu/INShuaKe/releases)
+
 ## Exe文件运行
 
 按照下边的介绍配置完毕，直接双击运行即可
