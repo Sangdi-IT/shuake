@@ -4,7 +4,7 @@ INShuaKe是使用PYTHON语言编写的**免费**SHUAKE工具，只限于HN地区
 
 目前有两种方法运行，**第一种软件运行（推荐使用）**，第二种PYTHON代码运行。
 
-有任何问题随时提问**Issue**或者**Discussions**，本人看到会第一时间回复。
+有任何问题随时提问**Issues**或者**Discussions**，本人看到会第一时间回复。
 
 # 郑重声明
 
@@ -26,6 +26,8 @@ INShuaKe是使用PYTHON语言编写的**免费**SHUAKE工具，只限于HN地区
 
 ## Exe文件运行
 
+按照下边的介绍配置完毕，直接双击运行即可
+
 **请确保装有谷歌浏览器！！！**
 
 **请确保装有谷歌浏览器！！！**
@@ -34,9 +36,9 @@ INShuaKe是使用PYTHON语言编写的**免费**SHUAKE工具，只限于HN地区
 
 ### 一、文件结构
 
-保持shuake.exe和config.txt在同一个目录下
+创建一个images的文件夹，同时保持shuake.exe和config.txt在同一个目录下
 
-![image-20250102150616632](./assets/image-20250102150616632.png)
+![image-20250104123153432](assets/image-20250104123153432.png)
 
 ### 二、config.txt文件格式
 
@@ -69,6 +71,8 @@ COURSER_LINK 填写方法：
 ### 三、运行截图
 
 ![image-20250102151823965](./assets/image-20250102151823965.png)
+
+![image-20250104123418192](assets/image-20250104123418192.png)
 
 ## Python代码运行
 
