@@ -27,7 +27,7 @@ INShuaKe是使用PYTHON语言编写的**免费**SHUAKE工具，只限于HN地区
 
 下载见右边Releases或点击以下链接
 
-[https://github.com/Drinkhuahuaniu/INShuaKe/releases](https://github.com/Drinkhuahuaniu/INShuaKe/releases)
+[https://github.com/Drinkhuahuaniu/INShuaKe/releases/tag/V1.0](https://github.com/Drinkhuahuaniu/INShuaKe/releases/tag/V1.0)
 
 ## Exe文件运行
 
@@ -78,6 +78,8 @@ COURSER_LINK 填写方法：
 ![image-20250102151823965](./assets/image-20250102151823965.png)
 
 ![image-20250104123418192](assets/image-20250104123418192.png)
+
+![image-20250105081555300](assets/image-20250105081555300.png)
 
 ## Python代码运行
 
