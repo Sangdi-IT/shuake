@@ -67,8 +67,8 @@ xxxxxxxxxxx = xxxxxxxxx
 
 COURSER_LINK 填写方法：
 
-找到你要刷的课程页，如下图所示，当前url地址即为COURSER_LINK，将其复制填入
-**填写完毕后，请将中文字符全部删掉！！！**
+找到你要刷的课程页，如下图所示，当前url地址即为COURSER_LINK，将其复制填入，
+**填写完毕后，请将config.txt文件内的中文字符全部删掉！！！**
 
 ![image-20231227104626991](./assets/image-20231227104626991.png)
 
