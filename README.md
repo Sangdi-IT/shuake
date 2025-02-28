@@ -60,7 +60,12 @@ COURSER_LINK = "xxx.xxx.xxx/#/courseCenter?channelld=xxx"   # 填写你需要刷
 
 COURSER_LINK 填写方法：
 
+
 找到你要刷的课程页，如下图所示，当前url地址即为COURSER_LINK，将其复制填入，**填写完毕后，请将config.txt文件内的中文字符全部删掉！！！**
+
+找到你要刷的课程页，如下图所示，当前url地址即为COURSER_LINK，将其复制填入，
+**填写完毕后，请将config.txt文件内的中文字符全部删掉！！！**
+>>>>>>> 4141be38a43673fac6f6222d35f5073edc04093a
 
 ![image-20231227104626991](./assets/image-20231227104626991.png)
 
