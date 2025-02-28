@@ -20,8 +20,9 @@ INShuaKe是使用PYTHON语言编写的**免费**SHUAKE工具，只限于HN地区
 
 - May 9, 2024 最新使用playwright库重新写的，并且加入课程进度条，比selenium更方便，直接装库运行命令即可，不需要再配置Chromedriver了
 - May 11, 2024 更新README.md以及调整默认浏览器为无窗口模式
-- January 2, 2024 更新EXE运行文件！使用请见说明！(预计在4号上线，2-4号网站维护没法测试)
-- January 4, 2024 **正式上线EXE文件！**
+- January 2, 2025 更新EXE运行文件！使用请见说明！(预计在4号上线，2-4号网站维护没法测试)
+- January 4, 2025 **正式上线EXE文件！**
+- February 13, 2025 更新因谷歌统一了无头模式和有头模式导致的软件不能运行以及README.md
 
 # 使用方法
 
@@ -52,22 +53,14 @@ INShuaKe是使用PYTHON语言编写的**免费**SHUAKE工具，只限于HN地区
 ```bash
 COURSER_LINK = "xxx.xxx.xxx/#/courseCenter?channelld=xxx"   # 填写你需要刷课的网址xxx
 
-# xxx                            # 账号1
-xxxxxxxxxxx = xxxxxxxxx          # 格式为： 手机号=密码
-
-# xxx
-xxxxxxxxxxx = xxxxxxxxx
-
-# xxx
-xxxxxxxxxxx = xxxxxxxxx
-
+手机号=密码
 ```
 
 可以继续添加账号
 
 COURSER_LINK 填写方法：
 
-找到你要刷的课程页，如下图所示，当前url地址即为COURSER_LINK，将其复制填入
+找到你要刷的课程页，如下图所示，当前url地址即为COURSER_LINK，将其复制填入，**填写完毕后，请将config.txt文件内的中文字符全部删掉！！！**
 
 ![image-20231227104626991](./assets/image-20231227104626991.png)
 
