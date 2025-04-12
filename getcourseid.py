@@ -1,105 +1,132 @@
-import requests
-import asyncio
+import aiohttp
 
-url = "https://bjce.bjdj.gov.cn/api-course/portal/open/usercourse/listCourse?searchCategoryID=xinshidaishoudufazhan&searchCourseName=&pageSize=16&currentPage=1&searchHasChild=1&lang=zh_CN"
+# 新的 API 地址（根据你提供的请求 URL）
+NEW_API_URL = "https://bjce.bjdj.gov.cn/api-course/portal/open/usercourse/listCourse"
+# 这个是服务器发送请求返回课程的url
+# https://bjce.bjdj.gov.cn/api-course/portal/open/usercourse/listCourse?searchCategoryID=xinshidaishoudufazhan&searchCourseName=&pageSize=16&currentPage=1&searchHasChild=1&lang=zh_CN
+# NEW_API_URL="https://bjce.bjdj.gov.cn/#/course/courseResources?activedIndex=3&id=xinshidaishoudufazhan"
 
-headers = {
-    'Connection': 'close',
-    'sec-ch-ua': '";Not A Brand";v="99", "Chromium";v="88"',
-    'Accept': 'application/json, text/plain, */*',
+# 根据你提供的请求头信息，构造请求头（注意大小写及必填字段）
+NEW_HEADERS = {
+    'accept': 'application/json, text/plain, */*',
+    'accept-encoding': 'gzip, deflate, br, zstd',
+    'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+    'cache-control': 'no-cache',
+    'connection': 'keep-alive',
+    'host': 'bjce.bjdj.gov.cn',
+    'referer': 'https://bjce.bjdj.gov.cn/',
+    'sec-ch-ua': '"Chromium";v="134", "Not:A-Brand";v="24", "Microsoft Edge";v="134"',
     'sec-ch-ua-mobile': '?0',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36',
-    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-    'Origin': 'https://bjce.bjdj.gov.cn',
-    'Sec-Fetch-Site': 'same-origin',
-    'Sec-Fetch-Mode': 'cors',
-    'Sec-Fetch-Dest': 'empty',
-    'Referer': 'https://bjce.bjdj.gov.cn/',
-    'Accept-Encoding': 'gzip, deflate',
-    'Accept-Language': 'zh-CN,zh;q=0.9',
-    'Cookie': ''
+    'sec-ch-ua-platform': '"Windows"',
+    'sec-fetch-dest': 'empty',
+    'sec-fetch-mode': 'cors',
+    'sec-fetch-site': 'same-origin',
+    'terminal': 'pc',
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0',
+    'x-xsrf-token': 'd4a489f4-824b-4548-8862-891406ba0aad'
 }
 
-# data = {
-#     'page': '1',
-#     'rows': '9',
-#     'sort': 'Sort',
-#     'order': 'desc',
-#     'courseType': '',
-#     'channelId': '975',
-#     'title': '',
-#     'titleNav': '课程中心',
-#     'wordLimt': '35',
-#     'teacher': '',
-#     'flag': 'all',
-#     'isSearch': '0',
-#     'channelCode': '',
-#     'isImportant': ''
-# }
-
-data = {
-    "userCourseID": 0,
-    "courseID": "a80ecea6-03a7-11f0-ab59-ee18dce1c88f",
-    "userID": 0,
-    "userName": 0,
-    "joinDate": 0,
-    "passState": 0,
-    "passTarget": 0,
-    "passDate": 0,
-    "learningProgress": 0,
-    "learningDuration": 0,
-    "learningHour": 0,
-    "state": 0,
-    "sourceType": 0,
-    "sourceID": 0,
-    "totalLearningDuration": 0,
-    "learningDetails": 0,
-    "course": 0,
-    "pcUserCourse": 0,
-    "courseDuration": 0,
-    "passNum": 0,
-    "passedWay": 0,
-    "courseType": 0,
-    "year": 0,
-    "obtainHoursType": 0,
-    "playLength": 0,
-    "socre": 0,
-    "latestOperateDate": 0,
-    'channlId':'',
-    "rows":'',
-    'page':''
+# 如果有其他默认参数，可在这里设置，这里仅说明 GET 方式下固定部分参数
+BASE_PARAMS = {
+    'searchCategoryID': 'xinshidaishoudufazhan',  # 该参数就是你现在请求的专题ID
+    'searchCourseName': '',
+    'pageSize': 16,            # 根据实际情况，是否需要调大
+    'currentPage': 2,
+    'searchHasChild': 1,
+    'lang': 'zh_CN'
 }
 
 
-async def Get_course_id(cookie: str, channel_id: str, rowlength: str, page_num: int):
-    # 设置请求头中的 Cookie，确保请求可以携带用户会话信息
-    headers['Cookie'] = cookie
+async def Get_course_id(cookie: str, search_category: str, page_size: int, current_page: int):
+    """
+    根据传入的 cookie、专题ID（search_category）、每页条数和当前页码，从接口获取课程列表数据。
+    获取课程的基本信息，包括 courseID、courseName、setType 等字段。
+    """
+    headers = NEW_HEADERS.copy()
+    # 将 cookie 填入 headers 内，注意必须包含所有有效的 Cookie 字段
+    headers['cookie'] = cookie
 
-    # 设置 POST 请求的请求体参数，包括频道 ID、每页的行数和当前页码
-    data['channelId'] = channel_id  # 课程所属频道 ID，用于过滤课程分类
-    data['rows'] = rowlength  # 每页课程条目数量，控制分页的行数
-    data['page'] = str(page_num)  # 当前页码，获取分页数据
+    # 更新查询参数
+    params = BASE_PARAMS.copy()
+    params.update({
+        'searchCategoryID': search_category,  # 传入的专题ID
+        'pageSize': page_size,
+        'currentPage': current_page
+    })
+    
 
-    # 发送 POST 请求以获取课程数据
-    response = requests.post(url, headers=headers, data=data)
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.get(NEW_API_URL, headers=headers, params=params) as response:
+                if response.status != 200:
+                    print(f"API请求失败，状态码: {response.status}")
+                    return []
+                json_resp = await response.json(encoding='utf-8')
+        except Exception as e:
+            print(f"请求过程中出现异常: {e}")
+            return []
 
-    # 解析返回的 JSON 数据，提取课程列表信息
-    ListData = response.json()['Data']['ListData']  # 课程列表位于返回数据的 ListData 字段
-
-    # 初始化课程信息列表，用于存储提取的课程 ID 和名称
+    # 根据返回的数据格式进行解析，假设最外层为 "data"，为一个列表
+    courses = json_resp.get("data", [])
     course_messages = []
+    
 
-    # 遍历课程列表，提取每门课程的 ID 和名称
-    for course in ListData:
-        course_message = {}
-        id = course["Id"]  # 获取课程的唯一 ID
-        name = course["Name"].strip()  # 获取课程名称，并去除首尾空白字符
-        course_message[id] = name  # 以 ID 为键，名称为值存储课程信息
-        course_messages.append(course_message)  # 将课程信息字典添加到列表中
-    # 打印课程列表
-    print("课程列表：")
-    for course in course_messages:
-        print(course)   
+    for course in courses:
+        # 检查必要字段：courseID 和 courseName
+        user_name = course.get("userName")
+        course_id = course.get("courseID")
+        course_name = course.get("courseName")
+        set_type = course.get("setType")  # 提取 setType 字段
+        if not course_id or not course_name or set_type is None:
+            print("课程数据缺少必要字段，跳过此条记录")
+            continue
 
-    # 返回课程信息列表，供后续调用
+        # 优先使用外层的学习进度；若为空，则尝试从 userCourse 字段中获取
+        progress = course.get("learningProgress")
+        if progress is None and course.get("userCourse"):
+            progress = course["userCourse"].get("learningProgress")
+        set_type = course.get("setType")      
+        # 优先使用外层的课程时长；若为空，则尝试从 userCourse 字段中获取
+        duration = course.get("courseDuration")
+        if duration is None and course.get("userCourse"):
+            duration = course["userCourse"].get("courseDuration")  # 注意这里对应字段名可能是 courseDuration
+            if duration is None:  # 如果外层和 userCourse 均没有 courseDuration，尝试获取 learningDuration
+                duration = course["userCourse"].get("learningDuration")
+        progress = progress or 0
+        # 构建最终返回的课程信息，增加 setType 字段
+        if progress < 0.8:  # 仅当 progress 小于 0.8 时才处理
+            course_info = {
+                "user": user_name,
+                "id": course_id,
+                "name": course_name.strip(),
+                "progress": progress,
+                "duration": duration,
+                "courseCode": course.get("courseCode"),
+                "courseIntroduction": course.get("courseIntroduction"),
+                "courseYear": course.get("courseYear"),
+                "coverImage": course.get("coverImage"),
+                "setType": set_type  # 新增的字段
+            }
+            course_messages.append(course_info)
+
+        # print(course_messages)
     return course_messages
+
+
+
+
+# 示例调用（请在你的异步主函数中调用）
+if __name__ == "__main__":
+    import asyncio
+
+    async def main():
+        # 请传入实际的 cookie 信息，例如从浏览器复制：
+        cookie = "lang=zh_CN; XSRF-TOKEN=d4a489f4-824b-4548-8862-891406ba0aad; SESSION=4161639f-2559-4d1d-9abf-6824904047f3"
+        search_category = "zhengzhililun"  # 专题ID
+        page_size = 16
+        current_page = 1
+        courses = await Get_course_id(cookie, search_category, page_size, current_page)
+        for c in courses:
+            print(c)
+
+    asyncio.run(main())

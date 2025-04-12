@@ -23,12 +23,7 @@ INShuaKe是使用PYTHON语言编写的**免费**SHUAKE工具，只限于HN地区
 - January 2, 2025 更新EXE运行文件！使用请见说明！(预计在4号上线，2-4号网站维护没法测试)
 - January 4, 2025 **正式上线EXE文件！**
 - February 13, 2025 更新因谷歌统一了无头模式和有头模式导致的软件不能运行以及README.md
-
-# 使用方法
-
-下载见右边Releases或点击以下链接
-
-https://github.com/Drinkhuahuaniu/INShuaKe/releases
+-04 12 2025 更新了bj的版本，但只支持代码运行 
 
 ## Exe文件运行
 
@@ -42,29 +37,23 @@ https://github.com/Drinkhuahuaniu/INShuaKe/releases
 
 ### 一、文件结构
 
-创建一个images的文件夹，同时保持shuake.exe和config.txt在同一个目录下
-
-![image-20250104123153432](assets/image-20250104123153432.png)
-
-### 二、config.txt文件格式
-
-
-
+### 二、.env文件格式
 ```bash
-COURSER_LINK = "xxx.xxx.xxx/#/courseCenter?channelld=xxx"   # 填写你需要刷课的网址xxx
+LOGIN_USER1=xxx
+LOGIN_USERNAME1=
+LOGIN_PASSWORD1=
 
-手机号=密码
+LOGIN_USER2=xxx
+LOGIN_USERNAME2=40911111
+LOGIN_PASSWORD2=
+
+LOGIN_USER3=xxx
+LOGIN_USERNAME3=
+LOGIN_PASSWORD3=
+
+COURSE_URL=https://bjce.bjdj.gov.cn/#/course/courseResources?activedIndex=4&id=zonghesuzhi
+CHANNEL_ID=zonghesuzhi
 ```
-
-可以继续添加账号
-
-COURSER_LINK 填写方法：
-
-
-找到你要刷的课程页，如下图所示，当前url地址即为COURSER_LINK，将其复制填入，**填写完毕后，请将config.txt文件内的中文字符全部删掉！！！**
-
-![image-20231227104626991](./assets/image-20231227104626991.png)
-
 
 
 ### 三、运行截图
@@ -105,19 +94,21 @@ playwright install
 
 #### 1、配置个人账号密码，所需要刷课的网址
 
-打开env文件夹下的config.py，并配置以下信息
+直接打开根目录下env文件，并配置以下信息
 
 ```python
 USER_NUMBER = "xxx"                                         # 填写你的账号xxx
-USER_PASSWD = "xxx"                                         # 填写你的密码xxx
-COURSER_LINK = "xxx.xxx.xxx/#/courseCenter?channelld=xxx"   # 填写你需要刷课的网址xxx
+USER_PASSWD = "xxx"                                         # 填写你的密码xxx  
+COURSE_URL=https://xx.xx.xx.cn/#/course/courseResources?activedIndex=4&id=zonghesuzhi# 填写你需要刷课的网址xxx
+CHANNEL_ID=zonghesuzhi #当前专题的id
 ```
 
-COURSER_LINK 填写方法：
+COURSER_LINK 填写方法(跟henan的差不多懒得改了)：
 
 找到你要刷的课程页，如下图所示，当前url地址即为COURSER_LINK，将其复制填入
 
 ![image-20231227104626991](./assets/image-20231227104626991.png)
+
 
 #### 2、开始运行
 
